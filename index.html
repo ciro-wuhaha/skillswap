@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkillSwap – Peer Skill Sharing</title>
+<style>
+:root{
+  --bg:#f6f7fb;--surface:#fff;--surface2:#f1f3f9;--text:#0f172a;--muted:#64748b;--border:#e5e7f0;
+  --primary:#6366f1;--primary2:#8b5cf6;--accent:#06b6d4;--ok:#16a34a;--star:#f59e0b;
+  --r:16px;--shadow:0 8px 30px rgba(15,23,42,.07);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0b0d17;--surface:#141726;--surface2:#1c2033;--text:#e8eaf6;--muted:#9aa3c0;--border:#262b45;--shadow:0 8px 30px rgba(0,0,0,.35);}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+button,input,textarea{font:inherit;color:inherit}
+.grad{background:linear-gradient(135deg,var(--primary),var(--primary2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn{border:0;border-radius:12px;padding:.8rem 1.2rem;font-weight:600;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 6px 18px rgba(99,102,241,.35)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:var(--surface2);color:var(--text)}
+.btn-ghost:hover{background:var(--border)}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.35rem;color:var(--muted)}
+.field input,.field textarea,.search{width:100%;padding:.8rem 1rem;background:var(--surface2);border:1.5px solid transparent;border-radius:12px;outline:0;transition:.2s}
+.field input:focus,.field textarea:focus,.search:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 4px rgba(99,102,241,.15)}
+.field input.err{border-color:#ef4444}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}
+.chip{background:var(--surface2);border:1px dashed var(--border);color:var(--muted);padding:.3rem .7rem;border-radius:999px;font-size:.8rem;cursor:pointer;transition:.2s}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.tag{display:inline-block;padding:.28rem .7rem;border-radius:999px;font-size:.8rem;font-weight:600;margin:.15rem .2rem .15rem 0;background:rgba(99,102,241,.14);color:var(--primary)}
+.tag.learn{background:rgba(6,182,212,.14);color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow)}
+
+/* Onboarding */
+#onboarding{min-height:100vh;display:grid;place-items:center;padding:1.5rem;
+  background:radial-gradient(60% 50% at 20% 0%,rgba(99,102,241,.25),transparent),radial-gradient(50% 50% at 90% 100%,rgba(6,182,212,.22),transparent),var(--bg)}
+.wizard{width:100%;max-width:460px}
+.brand{text-align:center;font-size:1.6rem;font-weight:800;margin-bottom:1.2rem}
+.steps{display:flex;gap:.4rem;margin-bottom:1.5rem}
+.steps i{flex:1;height:5px;border-radius:3px;background:var(--border);transition:.3s}
+.steps i.on{background:linear-gradient(90deg,var(--primary),var(--primary2))}
+.step{display:none;animation:up .35s ease}.step.active{display:block}
+.step h2{font-size:1.5rem;margin-bottom:.2rem}.step p.sub{color:var(--muted);font-size:.9rem;margin-bottom:1.3rem}
+.row{display:flex;gap:.7rem;margin-top:1.3rem}.row .btn{flex:1}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* App */
+#app{display:none;min-height:100vh;padding-bottom:5.5rem}
+header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding-top:env(safe-area-inset-top,0)}
+.nav{max-width:1080px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem}
+.logo{font-weight:800;font-size:1.25rem;cursor:pointer}
+.links{display:flex;gap:.25rem}
+.links button{background:none;border:0;padding:.5rem .9rem;border-radius:10px;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer;transition:.2s}
+.links button:hover{color:var(--text);background:var(--surface2)}
+.links button.active{color:var(--primary);background:rgba(99,102,241,.12)}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+main{max-width:1080px;margin:1.5rem auto;padding:0 1.2rem}
+.page{display:none;animation:up .35s ease}.page.active{display:block}
+h2.title{font-size:1.5rem;margin-bottom:.25rem}.subtitle{color:var(--muted);font-size:.92rem;margin-bottom:1.2rem}
+.hero{padding:2.5rem 1.5rem;border-radius:24px;color:#fff;background:linear-gradient(135deg,#4f46e5,#7c3aed 55%,#06b6d4);box-shadow:var(--shadow)}
+.hero h1{font-size:clamp(1.6rem,4vw,2.4rem);line-height:1.15;margin-bottom:.5rem}
+.hero p{opacity:.9;margin-bottom:1.3rem}
+.hero .btn{background:#fff;color:#4f46e5}.hero .btn.g{background:rgba(255,255,255,.18);color:#fff;margin-left:.5rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem}
+.stat{text-align:center}.stat b{font-size:1.6rem;display:block}.stat span{font-size:.78rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.person{display:flex;flex-direction:column;gap:.8rem;transition:.2s}
+.person:hover{transform:translateY(-3px)}
+.person .top{display:flex;gap:.8rem;align-items:center}
+.person .name{font-weight:700}.person .meta{font-size:.8rem;color:var(--muted)}
+.badge{margin-left:auto;background:rgba(22,163,74,.14);color:var(--ok);font-weight:700;font-size:.75rem;padding:.25rem .6rem;border-radius:999px;white-space:nowrap}
+.match{display:flex;align-items:center;gap:.8rem}
+.match .arrow{color:var(--muted);font-size:1.1rem}
+.match .who{font-size:.8rem;color:var(--muted)}.match .who b{display:block;color:var(--text);font-size:.95rem}
+.you{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.14),var(--shadow)}
+.section-h{font-size:1.05rem;margin:1.6rem 0 .8rem;display:flex;align-items:center;gap:.5rem}
+.live{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(22,163,74,.6);animation:pulse 1.8s infinite}
+.live.off{background:#ef4444;animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.skeleton{height:92px;border-radius:var(--r);background:linear-gradient(90deg,var(--surface2),var(--border),var(--surface2));background-size:200% 100%;animation:sh 1.3s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.empty{text-align:center;color:var(--muted);padding:2rem 1rem;border:1.5px dashed var(--border);border-radius:var(--r)}
+.notice{background:rgba(239,68,68,.1);color:#ef4444;padding:.7rem 1rem;border-radius:12px;font-size:.85rem;margin-bottom:1rem}
+.narrow{max-width:560px;margin:auto}
+.stars{display:flex;justify-content:center;gap:.3rem;font-size:2.2rem;margin:1rem 0}
+.stars span{cursor:pointer;color:var(--border);transition:.15s}.stars span.on{color:var(--star);transform:scale(1.1)}
+.toast{position:fixed;left:50%;bottom:calc(5.5rem + env(safe-area-inset-bottom,0));transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:.7rem 1.2rem;border-radius:12px;font-weight:600;font-size:.9rem;opacity:0;pointer-events:none;transition:.3s;z-index:200}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.tabbar{display:none}
+@media(max-width:720px){
+  .links{display:none}
+  .tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:.4rem .5rem calc(.4rem + env(safe-area-inset-bottom,0))}
+  .tabbar button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;font-size:.68rem;font-weight:600;color:var(--muted);padding:.35rem 0;cursor:pointer}
+  .tabbar button span{font-size:1.25rem}.tabbar button.active{color:var(--primary)}
+  .hero .btn.g{margin:.5rem 0 0}
+}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding"><div class="wizard card">
+  <div class="brand"><span class="grad">🔄 SkillSwap</span></div>
+  <div class="steps" id="steps"><i class="on"></i><i></i><i></i><i></i></div>
+
+  <div class="step active" data-step="1">
+    <h2>Create account</h2><p class="sub">Step 1 of 4 · Login credentials</p>
+    <div class="field"><label>Username</label><input id="reg-username" placeholder="e.g. alex_2026" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="reg-password" type="password" placeholder="Create a secure password" autocomplete="new-password"></div>
+    <div class="row"><button class="btn btn-primary" onclick="nextStep(1)">Next →</button></div>
+  </div>
+
+  <div class="step" data-step="2">
+    <h2>About you</h2><p class="sub">Step 2 of 4 · Personal info</p>
+    <div class="field"><label>Full name</label><input id="reg-fullname" placeholder="e.g. Alex Morgan"></div>
+    <div class="field"><label>Email</label><input id="reg-email" type="email" placeholder="student@college.edu"></div>
+    <div class="field"><label>Phone</label><input id="reg-phone" type="tel" placeholder="+91 9876543210"></div>
+    <div class="field"><label>College</label><input id="reg-college" placeholder="e.g. National Institute of Technology"></div>
+    <div class="row"><button class="btn btn-ghost" onclick="prevStep(2)">← Back</button><button class="btn btn-primary" onclick="nextStep(2)">Next →</button></div>
+  </div>
+
+  <div class="step" data-step="3">
+    <h2>Skills you have</h2><p class="sub">Step 3 of 4 · What can you teach?</p>
+    <div class="field"><label>Skills I can teach (comma separated)</label><input id="reg-teach-skills" placeholder="e.g. Python, Public Speaking">
+      <div class="chips" data-target="reg-teach-skills"></div></div>
+    <div class="row"><button class="btn btn-ghost" onclick="prevStep(3)">← Back</button><button class="btn btn-primary" onclick="nextStep(3)">Next →</button></div>
+  </div>
+
+  <div class="step" data-step="4">
+    <h2>Skills to learn</h2><p class="sub">Step 4 of 4 · What do you want to learn?</p>
+    <div class="field"><label>Skills I want to learn (comma separated)</label><input id="reg-learn-skills" placeholder="e.g. UI UX, Graphic Design">
+      <div class="chips" data-target="reg-learn-skills"></div></div>
+    <div class="row"><button class="btn btn-ghost" onclick="prevStep(4)">← Back</button><button class="btn btn-primary" onclick="completeRegistration()">Finish 🎉</button></div>
+  </div>
+</div></div>
+
+<!-- APP -->
+<div id="app">
+  <header><div class="nav">
+    <div class="logo grad" onclick="navigateTo('home')">🔄 SkillSwap</div>
+    <nav class="links" id="links"></nav>
+    <div class="avatar" id="nav-avatar" onclick="navigateTo('profile')" style="cursor:pointer">U</div>
+  </div></header>
+
+  <main>
+    <section id="page-home" class="page active">
+      <div class="hero">
+        <h1>Hey <span id="home-user-name">there</span> 👋<br>Learn from peers. Share what you know.</h1>
+        <p>Swap skills with students who want what you have — and have what you want.</p>
+        <button class="btn" onclick="navigateTo('find')">Find a skill</button>
+        <button class="btn g" onclick="navigateTo('matches')">See matches</button>
+      </div>
+      <div class="grid" style="margin-top:1rem;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <div class="card stat"><b id="stat-matches">–</b><span>Community matches</span></div>
+        <div class="card stat"><b id="stat-teach">0</b><span>Skills you teach</span></div>
+        <div class="card stat"><b id="stat-learn">0</b><span>Skills you're learning</span></div>
+      </div>
+    </section>
+
+    <section id="page-find" class="page">
+      <h2 class="title">Find a skill</h2><p class="subtitle">Search real teachers from the community.</p>
+      <input class="search" id="search-input" placeholder="Search a skill or person (e.g. Python)…" oninput="renderFind()">
+      <div class="grid" id="find-grid" style="margin-top:1rem"></div>
+    </section>
+
+    <section id="page-matches" class="page">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div><h2 class="title">Skill matches</h2><p class="subtitle" style="margin:0"><span class="live" id="live-dot"></span> Live from the SkillSwap network</p></div>
+        <button class="btn btn-ghost" onclick="loadMatches(true)">↻ Refresh</button>
+      </div>
+      <div id="matches-notice"></div>
+      <div id="my-matches-wrap"></div>
+      <h3 class="section-h">All community matches</h3>
+      <div class="grid" id="matches-grid"></div>
+    </section>
+
+    <section id="page-profile" class="page">
+      <div class="card narrow">
+        <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.3rem">
+          <div class="avatar" id="profile-avatar" style="width:64px;height:64px;font-size:1.6rem">U</div>
+          <div><h2 id="p-name" style="font-size:1.3rem">Name</h2><p id="p-college" style="color:var(--muted);font-size:.9rem">College</p></div>
+        </div>
+        <div id="profile-view">
+          <p class="meta" style="font-size:.75rem;font-weight:700;color:var(--muted)">CONTACT</p>
+          <p style="font-size:.92rem;margin:.3rem 0 1rem">@<span id="p-user">-</span><br><span id="p-email">-</span><br><span id="p-phone">-</span></p>
+          <p style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:.3rem">I CAN TEACH</p><div id="p-teach" style="margin-bottom:1rem"></div>
+          <p style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:.3rem">I WANT TO LEARN</p><div id="p-learn" style="margin-bottom:1.3rem"></div>
+          <button class="btn btn-ghost" style="width:100%" onclick="toggleEdit(true)">Edit profile</button>
+        </div>
+        <div id="profile-edit" style="display:none">
+          <div class="field"><label>Full name</label><input id="edit-fullname"></div>
+          <div class="field"><label>College</label><input id="edit-college"></div>
+          <div class="field"><label>Skills I can teach</label><input id="edit-teach"></div>
+          <div class="field"><label>Skills I want to learn</label><input id="edit-learn"></div>
+          <div class="row"><button class="btn btn-ghost" onclick="toggleEdit(false)">Cancel</button><button class="btn btn-primary" onclick="saveProfile()">Save</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-feedback" class="page">
+      <div class="card narrow" style="text-align:center">
+        <h2 class="title">Session feedback</h2><p class="subtitle">How was your peer learning experience?</p>
+        <div class="stars" id="stars"></div>
+        <div class="field" style="text-align:left"><textarea id="feedback-text" rows="4" placeholder="What did you learn in this session?"></textarea></div>
+        <button class="btn btn-primary" style="width:100%" onclick="submitFeedback()">Submit feedback</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = 'https://pricing-locked-near-scsi.trycloudflare.com/api/matches';
+const SUGGEST_TEACH = ['Python','HTML/CSS','Public Speaking','Drawing','Mathematics','UI UX'];
+const SUGGEST_LEARN = ['Python','Public Speaking','Drawing','Data Structures','Video Editing','UI UX'];
+const NAV = [['home','Home','🏠'],['find','Find','🔍'],['matches','Matches','🤝'],['profile','Profile','👤'],['feedback','Feedback','⭐']];
+
+let user = {username:'',password:'',fullname:'',email:'',phone:'',college:'',teachSkills:[],learnSkills:[]};
+let matches = [], rating = 0;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const parse = s => s.split(',').map(x => x.trim()).filter(Boolean);
+const norm = s => String(s || '').trim().toLowerCase();
+const initial = n => (n || '?').trim().charAt(0).toUpperCase();
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+function save(){try{localStorage.setItem('skillswap_user',JSON.stringify(user))}catch(e){}}
+
+/* ---------- Wizard ---------- */
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.toggle('active',+s.dataset.step===n));
+  document.querySelectorAll('#steps i').forEach((b,i)=>b.classList.toggle('on',i<n));
+}
+function addSkill(id,skill){
+  const el=$(id);const list=parse(el.value);
+  if(!list.some(x=>norm(x)===norm(skill))) list.push(skill);
+  el.value=list.join(', ');
+}
+function buildChips(){
+  document.querySelectorAll('.chips').forEach(box=>{
+    const list=box.dataset.target==='reg-teach-skills'?SUGGEST_TEACH:SUGGEST_LEARN;
+    box.innerHTML=list.map(s=>`<span class="chip" data-s="${esc(s)}">+ ${esc(s)}</span>`).join('');
+    box.onclick=e=>{const c=e.target.closest('.chip');if(c)addSkill(box.dataset.target,c.dataset.s)};
+  });
+}
+function need(ids){
+  let ok=true;
+  ids.forEach(id=>{const el=$(id);const bad=!el.value.trim();el.classList.toggle('err',bad);if(bad)ok=false});
+  if(!ok)toast('Please fill in the highlighted fields');
+  return ok;
+}
+function nextStep(n){
+  if(n===1){ if(!need(['reg-username','reg-password']))return; user.username=$('reg-username').value.trim(); user.password=$('reg-password').value; }
+  if(n===2){
+    if(!need(['reg-fullname','reg-email','reg-college']))return;
+    const em=$('reg-email').value.trim();
+    if(!/^\S+@\S+\.\S+$/.test(em)){$('reg-email').classList.add('err');toast('Enter a valid email');return}
+    user.fullname=$('reg-fullname').value.trim();user.email=em;user.phone=$('reg-phone').value.trim();user.college=$('reg-college').value.trim();
+  }
+  if(n===3){ const t=parse($('reg-teach-skills').value); if(!t.length){$('reg-teach-skills').classList.add('err');toast('Add at least one skill');return} user.teachSkills=t; }
+  showStep(n+1);
+}
+function prevStep(n){showStep(n-1)}
+function completeRegistration(){
+  const l=parse($('reg-learn-skills').value);
+  if(!l.length){$('reg-learn-skills').classList.add('err');toast('Add at least one skill');return}
+  user.learnSkills=l; save(); enterApp();
+}
+
+/* ---------- App shell ---------- */
+function enterApp(){
+  $('onboarding').style.display='none';$('app').style.display='block';
+  $('links').innerHTML=NAV.map(([id,l])=>`<button data-p="${id}" onclick="navigateTo('${id}')">${l}</button>`).join('');
+  $('tabbar').innerHTML=NAV.map(([id,l,i])=>`<button data-p="${id}" onclick="navigateTo('${id}')"><span>${i}</span>${l}</button>`).join('');
+  const stars=$('stars');stars.innerHTML=[1,2,3,4,5].map(n=>`<span onclick="setRating(${n})">★</span>`).join('');
+  renderUser();navigateTo('home');loadMatches();
+}
+function navigateTo(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
+  document.querySelectorAll('[data-p]').forEach(b=>b.classList.toggle('active',b.dataset.p===p));
+  if(p==='find')renderFind();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+const tags=(arr,cls='')=>arr.map(s=>`<span class="tag ${cls}">${esc(s)}</span>`).join('')||'<span style="color:var(--muted)">None yet</span>';
+function renderUser(){
+  const first=user.fullname.split(' ')[0]||'there';
+  $('home-user-name').textContent=first;
+  $('nav-avatar').textContent=$('profile-avatar').textContent=initial(user.fullname);
+  $('p-name').textContent=user.fullname;$('p-college').textContent=user.college;
+  $('p-user').textContent=user.username;$('p-email').textContent=user.email;$('p-phone').textContent=user.
